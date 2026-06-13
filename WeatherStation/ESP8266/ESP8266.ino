@@ -27,9 +27,9 @@ constexpr int DAYLIGHT_OFFSET_SEC = 0;
 /* ============================================================
   Timeouts
 ============================================================ */
-constexpr uint32_t WIFI_CONNECT_TIMEOUT_MS = 15000;
+constexpr uint32_t WIFI_CONNECT_TIMEOUT_MS   = 15000;
 constexpr uint32_t WIFI_RECONNECT_TIMEOUT_MS = 10000;
-constexpr uint32_t HTTPS_TIMEOUT_MS = 10000;
+constexpr uint32_t HTTPS_TIMEOUT_MS          = 10000;
 
 /* ============================================================
   Utility Functions
@@ -41,7 +41,7 @@ constexpr uint32_t HTTPS_TIMEOUT_MS = 10000;
  */
 bool connectWiFi()
 {
-    Serial.print(F("Connecting to WiFi"));
+    Serial.print(F("[ESP8266] Connecting to WiFi"));
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -55,13 +55,12 @@ bool connectWiFi()
 
         if (millis() - startTime > WIFI_CONNECT_TIMEOUT_MS)
         {
-            Serial.println(F("\nWiFi connection timeout."));
+            Serial.println(F("\n[ESP8266] WiFi connection timeout."));
             return false;
         }
     }
 
-    Serial.println();
-    Serial.print(F("Connected. IP: "));
+    Serial.print(F("\n[ESP8266] Connected. IP: "));
     Serial.println(WiFi.localIP());
 
     return true;
@@ -78,7 +77,7 @@ bool ensureWiFiConnection()
         return true;
     }
 
-    Serial.println(F("WiFi disconnected. Reconnecting..."));
+    Serial.println(F("[ESP8266] WiFi disconnected. Reconnecting..."));
 
     WiFi.reconnect();
 
@@ -90,12 +89,12 @@ bool ensureWiFiConnection()
 
         if (millis() - startTime > WIFI_RECONNECT_TIMEOUT_MS)
         {
-            Serial.println(F("Reconnection failed."));
+            Serial.println(F("[ESP8266] Reconnection failed."));
             return false;
         }
     }
 
-    Serial.println(F("WiFi reconnected."));
+    Serial.println(F("[ESP8266] WiFi reconnected."));
     return true;
 }
 
@@ -111,7 +110,7 @@ void synchronizeTime()
         NTP_SERVER
     );
 
-    Serial.print(F("Synchronizing time"));
+    Serial.print(F("[ESP8266] Synchronizing time"));
 
     time_t now = time(nullptr);
 
@@ -123,13 +122,13 @@ void synchronizeTime()
         now = time(nullptr);
     }
 
-    Serial.println(F("\nTime synchronized."));
+    Serial.println(F("\n[ESP8266] Time synchronized."));
 }
 
 /**
  * Отправка показаний на сервер.
  */
-void sendToServer(float temperature, float humidity)
+void sendToServer(float temperature, float humidity, float illumination)
 {
     if (!ensureWiFiConnection())
     {
@@ -146,15 +145,15 @@ void sendToServer(float temperature, float humidity)
 
     String url = String(SERVER_URL) +
                  "?temp=" + String(temperature, 1) +
-                 "&hum=" + String(humidity, 1);
+                 "&hum=" + String(humidity, 1) +
+                 "&illum=" + String(illumination, 1); 
 
-    Serial.println();
-    Serial.print(F("Sending GET request: "));
+    Serial.print(F("[ESP8266] Sending GET request: "));
     Serial.println(url);
 
     if (!http.begin(client, url))
     {
-        Serial.println(F("HTTP begin failed."));
+        Serial.println(F("[ESP8266] HTTP begin failed."));
         return;
     }
 
@@ -164,7 +163,7 @@ void sendToServer(float temperature, float humidity)
     {
         String response = http.getString();
 
-        Serial.print(F("Response: "));
+        Serial.print(F("[ESP8266] Response: "));
         Serial.println(response);
 
         /*
@@ -175,7 +174,7 @@ void sendToServer(float temperature, float humidity)
     }
     else if (httpCode > 0)
     {
-        Serial.printf("HTTP code: %d\n", httpCode);
+        Serial.printf("[ESP8266] HTTP code: %d\n", httpCode);
 
         /*
           Сервер ответил,
@@ -185,7 +184,7 @@ void sendToServer(float temperature, float humidity)
     }
     else
     {
-        Serial.print(F("Request failed: "));
+        Serial.print(F("[ESP8266] Request failed: "));
         Serial.println(http.errorToString(httpCode));
 
         /*
@@ -214,28 +213,24 @@ void processIncomingJson(const String& jsonLine)
 
     if (error)
     {
-        Serial.print(F("JSON parse error: "));
+        Serial.print(F("[ESP8266] JSON parse error: "));
         Serial.println(error.c_str());
         return;
     }
 
     if (!doc["temp"].is<float>() ||
-        !doc["hum"].is<float>())
+        !doc["hum"].is<float>()  || 
+        !doc["illum"].is<float>())
     {
-        Serial.println(F("Missing temp/hum fields."));
+        Serial.println(F("[ESP8266] Missing temp/hum fields."));
         return;
     }
 
-    float temperature = doc["temp"];
-    float humidity    = doc["hum"];
+    float temperature  = doc["temp"];
+    float humidity     = doc["hum"];
+    float illumination = doc["illum"];
 
-    Serial.printf(
-        "Temperature: %.1f °C | Humidity: %.1f %%\n",
-        temperature,
-        humidity
-    );
-
-    sendToServer(temperature, humidity);
+    sendToServer(temperature, humidity, illumination);
 }
 
 /* ============================================================
@@ -249,13 +244,13 @@ void setup()
     delay(1000);
 
     Serial.println();
-    Serial.println(F("ESP8266 Sensor Gateway Starting"));
+    Serial.println(F("[ESP8266] Sensor Gateway Starting"));
 
     if (connectWiFi())
     {
         synchronizeTime();
     } else {
-        Serial.println(F("Startup WiFi connection failed. Time sync skipped."));
+        Serial.println(F("[ESP8266] Startup WiFi connection failed. Time sync skipped."));
     }
 }
 
@@ -273,7 +268,7 @@ void loop()
 
         if (!line.isEmpty())
         {
-            Serial.print(F("Received JSON: "));
+            Serial.print(F("[ESP8266] Received JSON: "));
             Serial.println(line);
 
             processIncomingJson(line);
