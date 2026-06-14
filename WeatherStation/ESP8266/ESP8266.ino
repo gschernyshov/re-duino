@@ -16,15 +16,15 @@ constexpr char WIFI_PASSWORD[] = "YOUR_WIFI_PASSWORD";
 constexpr char SERVER_URL[] =
     "YOUR_SERVER_URL";
 
-constexpr char API_KEY[] = "YOUR_"API_KEY; 
+constexpr char API_KEY[] = "YOUR_API_KEY"; 
 
 /* ============================================================
   NTP Configuration
 ============================================================ */
 constexpr char NTP_SERVER[] = "pool.ntp.org";
 
-constexpr long GMT_OFFSET_SEC     = 10800; // UTC+3 (Москва)
-constexpr int DAYLIGHT_OFFSET_SEC = 0;
+constexpr uint32_t GMT_OFFSET_SEC      = 10800; // UTC+3 (Москва)
+constexpr uint32_t DAYLIGHT_OFFSET_SEC = 0;
 
 /* ============================================================
   Timeouts
@@ -57,7 +57,7 @@ bool connectWiFi()
 
         if (millis() - startTime > WIFI_CONNECT_TIMEOUT_MS)
         {
-            Serial.println(F("\n[ESP8266] WiFi connection timeout."));
+            Serial.println(F("\n[ESP8266] WiFi connection timeout"));
             return false;
         }
     }
@@ -91,12 +91,13 @@ bool ensureWiFiConnection()
 
         if (millis() - startTime > WIFI_RECONNECT_TIMEOUT_MS)
         {
-            Serial.println(F("[ESP8266] Reconnection failed."));
+            Serial.println(F("[ESP8266] Reconnection failed"));
             return false;
         }
     }
 
-    Serial.println(F("[ESP8266] WiFi reconnected."));
+    Serial.println(F("[ESP8266] WiFi reconnected"));
+
     return true;
 }
 
@@ -124,7 +125,7 @@ void synchronizeTime()
         now = time(nullptr);
     }
 
-    Serial.println(F("\n[ESP8266] Time synchronized."));
+    Serial.println(F("\n[ESP8266] Time synchronized"));
 }
 
 /**
@@ -155,11 +156,11 @@ void sendToServer(float temperature, float humidity, float illumination)
 
     if (!http.begin(client, url))
     {
-        Serial.println(F("[ESP8266] HTTP begin failed."));
+        Serial.println(F("[ESP8266] HTTP begin failed"));
         return;
     }
 
-    // Добавляем заголовок идентификации
+    // Добавляем заголовок идентификации.
     http.addHeader("X-API-Key", API_KEY);
 
     int httpCode = http.GET();
@@ -199,6 +200,7 @@ void sendToServer(float temperature, float humidity, float illumination)
         Serial.println(F("NACK"));
     }
 
+
     http.end();
     client.stop();
 }
@@ -207,7 +209,7 @@ void sendToServer(float temperature, float humidity, float illumination)
  * Обработка входящего JSON из UART.
  *
  * Ожидаемый формат:
- * {"temp":25.4,"hum":61.2}
+ * {"temp":25.4,"hum":61.2,"illum":12.3}
  */
 void processIncomingJson(const String& jsonLine)
 {
@@ -227,7 +229,7 @@ void processIncomingJson(const String& jsonLine)
         !doc["hum"].is<float>()  || 
         !doc["illum"].is<float>())
     {
-        Serial.println(F("[ESP8266] Missing temp/hum fields."));
+        Serial.println(F("[ESP8266] Missing temp/hum fields"));
         return;
     }
 
@@ -254,8 +256,9 @@ void setup()
     if (connectWiFi())
     {
         synchronizeTime();
-    } else {
-        Serial.println(F("[ESP8266] Startup WiFi connection failed. Time sync skipped."));
+    } else 
+    {
+        Serial.println(F("[ESP8266] Startup WiFi connection failed. Time sync skipped"));
     }
 }
 

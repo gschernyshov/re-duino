@@ -46,19 +46,19 @@ LiquidCrystal lcd(Pins::LCD_RS,  Pins::LCD_EN,
 ============================================================ */
 constexpr uint32_t SENSOR_PERIOD_MS = 1500;
 constexpr uint32_t SCREEN_PERIOD_MS = 3000; 
-constexpr uint32_t SEND_PERIOD_MS   = 900000; 
-constexpr uint32_t ACK_TIMEOUT_MS   = 10000; 
-constexpr uint32_t RETRY_DELAY_MS   = 15000; 
+constexpr uint32_t SEND_PERIOD_MS   = 1200000; 
+constexpr uint32_t ACK_TIMEOUT_MS   = 30000; 
+constexpr uint32_t RETRY_DELAY_MS   = 40000; 
 constexpr uint8_t MAX_RETRIES       = 3;
 
 // Параметры звуковых сигналов (частота, длительность, пауза).
-const int SENDING_FREQ  = 1000;
-const int SENDING_DUR   = 50;
-const int SUCCESS_FREQ  = 1500;
-const int SUCCESS_DUR   = 40;
-const int SUCCESS_PAUSE = 80;
-const int ERROR_FREQ    = 800;
-const int ERROR_DUR     = 500;
+constexpr uint16_t SENDING_FREQ  = 1000;
+constexpr uint16_t SENDING_DUR   = 50;
+constexpr uint16_t SUCCESS_FREQ  = 1500;
+constexpr uint16_t SUCCESS_DUR   = 40;
+constexpr uint16_t SUCCESS_PAUSE = 80;
+constexpr uint16_t ERROR_FREQ    = 800;
+constexpr uint16_t ERROR_DUR     = 500;
 
 /* ============================================================
    Global state
@@ -162,8 +162,8 @@ void processESPCommunication()
 }
 
 /*
-Проверяем, дождались ли подтверждения
-от ESP8266 после отправки JSON.
+    Проверяем, дождались ли подтверждения
+    от ESP8266 после отправки JSON.
 */
 void checkAckTimeout()
 {
@@ -336,9 +336,9 @@ void updateSensor()
 
             if (!isDHTDataValid(temperature, humidity))
             {
-                logMessage(F("Invalid sensor values"));
-
                 currentScreen = DisplayState::ERROR;
+
+                logMessage(F("Invalid sensor values"));
             } else 
             {
                 currentTemperature = temperature;
@@ -349,11 +349,11 @@ void updateSensor()
                     currentScreen = DisplayState::TEMPERATURE;
                 }
 
-                PC_SERIAL.print(F("[Leonardo] Temperature: "));
-                PC_SERIAL.print(currentTemperature);
-                PC_SERIAL.print(F(" C | Humidity: "));
-                PC_SERIAL.print(currentHumidity);
-                PC_SERIAL.println(F(" %"));
+                // PC_SERIAL.print(F("[Leonardo] Temperature: "));
+                // PC_SERIAL.print(currentTemperature);
+                // PC_SERIAL.print(F(" C | Humidity: "));
+                // PC_SERIAL.print(currentHumidity);
+                // PC_SERIAL.println(F(" %"));
             }
 
             break;
@@ -384,9 +384,9 @@ void updateSensor()
 
     currentIllumination = sensorLight.getLightLux();
 
-    PC_SERIAL.print(F("[Leonardo] Light: "));
-    PC_SERIAL.print(currentIllumination);
-    PC_SERIAL.println(F(" Lx"));
+    // PC_SERIAL.print(F("[Leonardo] Light: "));
+    // PC_SERIAL.print(currentIllumination);
+    // PC_SERIAL.println(F(" Lx"));
 }
 
 /* ============================================================
@@ -431,8 +431,10 @@ void updateDisplay()
    Sound & Light Indication 
 ============================================================ */
 
-void startSendingSignal() {
-    if (buzzerState == BuzzerState::BUZZER_IDLE) {
+void startSendingSignal() 
+{
+    if (buzzerState == BuzzerState::BUZZER_IDLE)
+    {
         tone(Pins::BUZZER, SENDING_FREQ, SENDING_DUR);
         digitalWrite(Pins::LED_YELLOW, HIGH);  
 
@@ -441,8 +443,10 @@ void startSendingSignal() {
     }
 }
 
-void startSuccessSignal() {
-    if (buzzerState == BuzzerState::BUZZER_IDLE) {
+void startSuccessSignal() 
+{
+    if (buzzerState == BuzzerState::BUZZER_IDLE) 
+    {
         tone(Pins::BUZZER, SUCCESS_FREQ, SUCCESS_DUR);
         digitalWrite(Pins::LED_GREEN, HIGH);        
 
@@ -453,7 +457,8 @@ void startSuccessSignal() {
 
 void startErrorSignal() 
 {
-    if (buzzerState == BuzzerState::BUZZER_IDLE) {
+    if (buzzerState == BuzzerState::BUZZER_IDLE) 
+    {
         tone(Pins::BUZZER, ERROR_FREQ, ERROR_DUR);
         digitalWrite(Pins::LED_RED, HIGH);
 
@@ -466,7 +471,8 @@ void updateIndication()
 {
     unsigned long now = millis();
     
-    switch (buzzerState) {
+    switch (buzzerState) 
+    {
         case BuzzerState::BUZZER_SENDING:
             if (now >= buzzerTimer) 
             {
