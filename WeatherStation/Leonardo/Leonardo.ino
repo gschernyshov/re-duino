@@ -47,8 +47,8 @@ LiquidCrystal lcd(Pins::LCD_RS,  Pins::LCD_EN,
 constexpr uint32_t SENSOR_PERIOD_MS = 1500;
 constexpr uint32_t SCREEN_PERIOD_MS = 3000; 
 constexpr uint32_t SEND_PERIOD_MS   = 900000; 
-constexpr uint32_t ACK_TIMEOUT_MS   = 5000; 
-constexpr uint32_t RETRY_DELAY_MS   = 7000; 
+constexpr uint32_t ACK_TIMEOUT_MS   = 10000; 
+constexpr uint32_t RETRY_DELAY_MS   = 10000; 
 constexpr uint8_t MAX_RETRIES       = 3;
 
 // Параметры звуковых сигналов (частота, длительность, пауза).
