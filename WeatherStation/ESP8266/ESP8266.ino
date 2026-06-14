@@ -7,14 +7,16 @@
 /* ============================================================
   Wi-Fi Configuration
 ============================================================ */
-constexpr char WIFI_SSID[]     = "RT-WiFi-17D9";
-constexpr char WIFI_PASSWORD[] = "3UBeaUzZrE";
+constexpr char WIFI_SSID[]     = "YOUR_WIFI_SSID";
+constexpr char WIFI_PASSWORD[] = "YOUR_WIFI_PASSWORD";
 
 /* ============================================================
   Remote API Configuration
 ============================================================ */
 constexpr char SERVER_URL[] =
-    "https://garbage-pi-eight.vercel.app/api/sensor";
+    "YOUR_SERVER_URL";
+
+constexpr char API_KEY[] = "YOUR_"API_KEY; 
 
 /* ============================================================
   NTP Configuration
@@ -156,6 +158,9 @@ void sendToServer(float temperature, float humidity, float illumination)
         Serial.println(F("[ESP8266] HTTP begin failed."));
         return;
     }
+
+    // Добавляем заголовок идентификации
+    http.addHeader("X-API-Key", API_KEY);
 
     int httpCode = http.GET();
 
