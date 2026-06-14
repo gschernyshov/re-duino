@@ -206,7 +206,7 @@ void showTemperature()
     lcd.print(F(" \x99""C "));
 
     lcd.print(currentTemperature + 273.15f, 0);
-    lcd.print(F(" \x99""K "));
+    lcd.print(F(" K"));
 }
 
 void showHumidity()
